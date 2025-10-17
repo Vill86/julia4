@@ -67,6 +67,17 @@
         @keyframes fadeIn {
             to { opacity: 1; }
         }
+        .sound-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid #4a90e2;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin: 0 10px;
+        }
+        .sound-toggle:hover { background: rgba(255, 255, 255, 0.3); }
         .status-bar {
             display: flex;
             justify-content: space-around;
@@ -247,7 +258,9 @@
 <body>
     <div class="container">
         <h1>🧠 Психо-Приключение: Лабиринт Тревог 🧠</h1>
-        <p class="intro">Добро пожаловать в лабиринт вашего сознания! Проходите 10 уровней, сражайтесь с внутренними демонами тревоги и страхов. Выборы — ваш меч. В конце узнайте, насколько вы мастер решений! Готовы нырнуть в бездну?</p>
+        <p class="intro">Добро пожаловать в лабиринт вашего сознания! Проходите 10 уровней, сражайтесь с внутренними демонами тревоги и страхов. Выборы — ваш меч. В конце узнайте, насколько вы мастер решений! Готовы нырнуть в бездну?
+            <br><button class="sound-toggle" id="soundToggle" onclick="toggleSounds()">🔊 Включить звуки</button>
+        </p>
         
         <div class="status-bar" id="statusBar">
             <div class="status-item">
@@ -366,23 +379,85 @@
         let scores = { anxiety: 0, fear: 0, decision: 0 };
         let timerInterval;
         let timeLeft = 30;
-        const bonusTime = 10; // Секунды для бонуса
+        const bonusTime = 10;
+        let soundsEnabled = false;
+        let audioContext;
+
+        // Инициализация аудио
+        function initAudio() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        // Функция для генерации звука
+        function playSound(type) {
+            if (!soundsEnabled || !audioContext) return;
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            switch (type) {
+                case 'whoosh': // Свистящий звук выбора
+                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.3);
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    break;
+                case 'heartbeat': // Пульсирующий бит
+                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    oscillator.frequency.setValueAtTime(60, audioContext.currentTime);
+                    break;
+                case 'victory': // Триумфальный фанфар
+                    oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+                    oscillator.frequency.setValueAtTime(554, audioContext.currentTime + 0.2);
+                    oscillator.frequency.setValueAtTime(659, audioContext.currentTime + 0.4);
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6);
+                    break;
+            }
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + (type === 'victory' ? 0.6 : 0.3));
+        }
+
+        // Вибрация для мобильных
+        function vibrate(pattern = [200]) {
+            if (navigator.vibrate) {
+                navigator.vibrate(pattern);
+            }
+        }
+
+        function toggleSounds() {
+            soundsEnabled = !soundsEnabled;
+            const btn = document.getElementById('soundToggle');
+            btn.textContent = soundsEnabled ? '🔇 Выключить звуки' : '🔊 Включить звуки';
+            if (soundsEnabled) {
+                initAudio();
+                playSound('whoosh'); // Тестовый звук
+            }
+        }
 
         function startTimer() {
             timeLeft = 30;
             document.getElementById('timer').textContent = timeLeft;
             document.getElementById('timer').classList.remove('critical');
+            let heartbeatInterval;
             timerInterval = setInterval(() => {
                 timeLeft--;
                 document.getElementById('timer').textContent = timeLeft;
-                if (timeLeft <= 5) {
+                if (timeLeft <= 10) {
+                    playSound('heartbeat');
+                    vibrate([100, 50, 100]);
                     document.getElementById('timer').classList.add('critical');
+                }
+                if (timeLeft <= 5) {
+                    vibrate([200]);
                 }
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    // Авто-выбор случайного, если время вышло
                     const randomChoice = levels[currentLevel].choices[Math.floor(Math.random() * 3)];
-                    setTimeout(() => selectChoice(randomChoice, true), 500); // Пауза для драмы
+                    setTimeout(() => selectChoice(randomChoice, true), 500);
                 }
             }, 1000);
         }
@@ -431,19 +506,20 @@
 
         function selectChoice(choice, auto = false) {
             stopTimer();
+            playSound('whoosh');
+            vibrate([100]);
+
             // Бонус/штраф по времени
             if (!auto) {
                 if (timeLeft > bonusTime) {
-                    scores.decision += 1; // Бонус за быстрый выбор
+                    scores.decision += 1;
                 } else if (timeLeft < 5) {
-                    scores.anxiety += 1; // Штраф за медленный
+                    scores.anxiety += 1;
                 }
             } else {
-                // Авто-выбор: +2 к тревоге за промедление
                 scores.anxiety += 2;
             }
             
-            // Отключаем кнопки на миг для эффекта
             const buttons = document.querySelectorAll('button');
             buttons.forEach(b => b.disabled = true);
             setTimeout(() => {
@@ -455,7 +531,7 @@
             scores.decision += choice.decision;
             currentLevel++;
             if (currentLevel < levels.length) {
-                setTimeout(() => showLevel(), 800); // Пауза между уровнями
+                setTimeout(() => showLevel(), 800);
             } else {
                 setTimeout(() => showResults(), 800);
             }
@@ -467,6 +543,8 @@
         }
 
         function showResults() {
+            playSound('victory');
+            vibrate([200, 100, 200]);
             document.getElementById('game').style.display = 'none';
             const resultsDiv = document.getElementById('results');
             resultsDiv.style.display = 'block';
