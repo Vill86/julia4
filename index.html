@@ -79,7 +79,7 @@
         }
         .status-item {
             text-align: center;
-            min-width: 120px;
+            min-width: 100px;
         }
         .status-item strong {
             display: block;
@@ -92,6 +92,21 @@
         .stress-low { color: #6bcf7f; }
         .stress-medium { color: #ffd93d; }
         .stress-high { color: #ff6b6b; }
+        .timer {
+            color: #ffd93d;
+            font-size: 1.2em;
+            animation: pulse 1s infinite;
+        }
+        .timer.critical { color: #ff6b6b; animation: shake 0.5s infinite; }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-2px); }
+            75% { transform: translateX(2px); }
+        }
         .scenario {
             font-size: 1.3em;
             margin-bottom: 30px;
@@ -147,6 +162,11 @@
         }
         button:active {
             transform: translateY(0) scale(1);
+        }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
         }
         .progress {
             width: 80%;
@@ -241,6 +261,10 @@
             <div class="status-item">
                 <strong>Баллы (Тревога)</strong>
                 <span class="status-value" id="anxietyScore">0</span>
+            </div>
+            <div class="status-item">
+                <strong>Таймер</strong>
+                <span class="status-value timer" id="timer">30</span>
             </div>
         </div>
         
@@ -340,6 +364,32 @@
 
         let currentLevel = 0;
         let scores = { anxiety: 0, fear: 0, decision: 0 };
+        let timerInterval;
+        let timeLeft = 30;
+        const bonusTime = 10; // Секунды для бонуса
+
+        function startTimer() {
+            timeLeft = 30;
+            document.getElementById('timer').textContent = timeLeft;
+            document.getElementById('timer').classList.remove('critical');
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+                if (timeLeft <= 5) {
+                    document.getElementById('timer').classList.add('critical');
+                }
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    // Авто-выбор случайного, если время вышло
+                    const randomChoice = levels[currentLevel].choices[Math.floor(Math.random() * 3)];
+                    setTimeout(() => selectChoice(randomChoice, true), 500); // Пауза для драмы
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
 
         function updateStatus() {
             const levelNum = currentLevel + 1;
@@ -351,10 +401,10 @@
             
             let stressText = 'Низкий';
             let stressClass = 'stress-low';
-            if (totalAnxiety > (levels.length * 3 * 2 / 3)) { // Примерно >20/30 для высокого
+            if (totalAnxiety > 20) {
                 stressText = 'Высокий';
                 stressClass = 'stress-high';
-            } else if (totalAnxiety > (levels.length * 3 / 3)) { // >10/30 для среднего
+            } else if (totalAnxiety > 10) {
                 stressText = 'Средний';
                 stressClass = 'stress-medium';
             }
@@ -371,22 +421,43 @@
             level.choices.forEach((choice) => {
                 const btn = document.createElement('button');
                 btn.innerHTML = choice.text;
-                btn.onclick = () => selectChoice(choice);
+                btn.onclick = () => selectChoice(choice, false);
                 choicesDiv.appendChild(btn);
             });
             updateProgress();
             updateStatus();
+            startTimer();
         }
 
-        function selectChoice(choice) {
+        function selectChoice(choice, auto = false) {
+            stopTimer();
+            // Бонус/штраф по времени
+            if (!auto) {
+                if (timeLeft > bonusTime) {
+                    scores.decision += 1; // Бонус за быстрый выбор
+                } else if (timeLeft < 5) {
+                    scores.anxiety += 1; // Штраф за медленный
+                }
+            } else {
+                // Авто-выбор: +2 к тревоге за промедление
+                scores.anxiety += 2;
+            }
+            
+            // Отключаем кнопки на миг для эффекта
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(b => b.disabled = true);
+            setTimeout(() => {
+                buttons.forEach(b => b.disabled = false);
+            }, 300);
+            
             scores.anxiety += choice.anxiety;
             scores.fear += choice.fear;
             scores.decision += choice.decision;
             currentLevel++;
             if (currentLevel < levels.length) {
-                showLevel();
+                setTimeout(() => showLevel(), 800); // Пауза между уровнями
             } else {
-                showResults();
+                setTimeout(() => showResults(), 800);
             }
         }
 
@@ -402,7 +473,7 @@
 
             const totalAnxiety = scores.anxiety;
             const totalFear = scores.fear;
-            const totalDecision = scores.decision * 3;
+            const totalDecision = Math.min(scores.decision * 3, 30); // Кап на 30
 
             let anxietyClass = totalAnxiety <= 10 ? 'low' : totalAnxiety <= 20 ? 'medium' : 'high';
             let fearClass = totalFear <= 10 ? 'low' : totalFear <= 20 ? 'medium' : 'high';
