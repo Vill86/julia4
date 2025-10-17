@@ -3,81 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Психологическая Игра: Уровень Тревоги и Принятие Решений</title>
+    <title>Психо-Приключение: Лабиринт Тревог</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Creepster&family=Orbitron:wght@400;700&display=swap');
+        
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f8ff;
-            color: #333;
+            font-family: 'Orbitron', monospace;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #0f3460 100%);
+            color: #fff;
             text-align: center;
-            padding: 20px;
+            padding: 0;
             margin: 0;
+            overflow-x: hidden;
+            animation: bgPulse 10s ease-in-out infinite alternate;
+        }
+        @keyframes bgPulse {
+            0% { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #0f3460 100%); }
+            100% { background: linear-gradient(135deg, #0f3460 0%, #2a5298 50%, #1e3c72 100%); }
         }
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(74, 144, 226, 0.5);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(74, 144, 226, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         h1 {
-            color: #4a90e2;
+            font-family: 'Creepster', cursive;
+            color: #ff6b6b;
+            font-size: 2.5em;
+            text-shadow: 0 0 10px #ff6b6b;
+            margin-bottom: 10px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #ff6b6b; }
+            to { text-shadow: 0 0 20px #ff6b6b, 0 0 30px #ff6b6b; }
+        }
+        .intro {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            opacity: 0;
+            animation: fadeIn 1s ease-in forwards;
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; }
         }
         .scenario {
-            font-size: 18px;
-            margin-bottom: 20px;
-            line-height: 1.5;
+            font-size: 1.3em;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(74, 144, 226, 0.3);
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
         .choices {
             display: flex;
             flex-direction: column;
             align-items: center;
+            gap: 15px;
         }
         button {
-            background-color: #4a90e2;
+            background: linear-gradient(45deg, #4a90e2, #357abd);
             color: white;
             border: none;
-            padding: 10px 20px;
-            margin: 10px;
-            border-radius: 5px;
+            padding: 15px 30px;
+            border-radius: 50px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 1.1em;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            min-width: 300px;
+        }
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        button:hover::before {
+            left: 100%;
         }
         button:hover {
-            background-color: #357abd;
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, #357abd, #4a90e2);
+        }
+        button:active {
+            transform: translateY(0) scale(1);
         }
         .progress {
-            width: 100%;
-            height: 20px;
-            background-color: #ddd;
-            border-radius: 10px;
-            margin: 20px 0;
+            width: 80%;
+            height: 25px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 50px;
+            margin: 30px auto;
             overflow: hidden;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
         }
         .progress-bar {
             height: 100%;
-            background-color: #4a90e2;
+            background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcf7f);
             width: 0%;
-            transition: width 0.3s;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+        .progress-bar::after {
+            content: 'Уровень ' + (currentLevel + 1);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #000;
+            font-weight: bold;
+            font-size: 0.9em;
         }
         #results {
             display: none;
-            font-size: 18px;
+            font-size: 1.2em;
             margin-top: 20px;
+            animation: fadeIn 1s ease-in;
         }
         .score {
-            background-color: #e8f5e8;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 15px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+        .score:hover {
+            transform: scale(1.05);
+        }
+        .low { border-left: 5px solid #6bcf7f; }
+        .medium { border-left: 5px solid #ffd93d; }
+        .high { border-left: 5px solid #ff6b6b; }
+        .decision-high { border-left: 5px solid #6bcf7f; }
+        .decision-medium { border-left: 5px solid #ffd93d; }
+        .decision-low { border-left: 5px solid #ff6b6b; }
+        .restart {
+            background: linear-gradient(45deg, #6bcf7f, #4a90e2);
+            font-size: 1.2em;
+            padding: 15px 40px;
+        }
+        .restart:hover {
+            background: linear-gradient(45deg, #4a90e2, #6bcf7f);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Психологическая Игра: Тест на Тревогу, Страхи и Принятие Решений</h1>
-        <p>Эта игра состоит из 10 уровней. На каждом уровне вам будет предложен сценарий. Выберите один из вариантов ответа. Ваши выборы помогут оценить уровень тревоги, страхов и умение принимать решения.</p>
+        <h1>🧠 Психо-Приключение: Лабиринт Тревог 🧠</h1>
+        <p class="intro">Добро пожаловать в лабиринт вашего сознания! Проходите 10 уровней, сражайтесь с внутренними демонами тревоги и страхов. Выборы — ваш меч. В конце узнайте, насколько вы мастер решений! Готовы нырнуть в бездну?</p>
         <div class="progress">
             <div class="progress-bar" id="progressBar"></div>
         </div>
@@ -91,83 +199,83 @@
     <script>
         const levels = [
             {
-                scenario: "Вы стоите перед важным собеседованием. Внезапно вы чувствуете сильное волнение. Что вы сделаете?",
+                scenario: "🌟 Уровень 1: Тень Собеседования. Вы стоите перед важным собеседованием. Внезапно волнение сжимает грудь, как тиски. Тени шепчут: 'Ты провалишься!' Что вы сделаете?",
                 choices: [
-                    { text: "Отмените собеседование, чтобы избежать стресса.", anxiety: 3, fear: 2, decision: 1 },
-                    { text: "Сделайте глубокий вдох и продолжите, напомнив себе о подготовке.", anxiety: 1, fear: 1, decision: 3 },
-                    { text: "Начнете паниковать и говорить бессвязно.", anxiety: 3, fear: 3, decision: 1 }
+                    { text: "🛑 Отмените всё, спрячьтесь в норку — лучше не рисковать!", anxiety: 3, fear: 2, decision: 1 },
+                    { text: "🌬️ Глубокий вдох, вспоминаете подготовку и шагаете вперёд с улыбкой.", anxiety: 1, fear: 1, decision: 3 },
+                    { text: "😱 Паника! Бессвязный лепет, пот на лбу — хаос!", anxiety: 3, fear: 3, decision: 1 }
                 ]
             },
             {
-                scenario: "Вам нужно принять решение о смене работы. Новая работа рискованная, но перспективная. Ваш страх неудачи мешает.",
+                scenario: "⚡ Уровень 2: Развилка Карьеры. Новая работа манит огнями успеха, но страх неудачи рычит из тени. Лабиринт ветвится: риск или безопасность?",
                 choices: [
-                    { text: "Останетесь на старой работе из страха неизвестного.", anxiety: 2, fear: 3, decision: 2 },
-                    { text: "Взвесите плюсы и минусы, проконсультируйтесь с друзьями и решите.", anxiety: 1, fear: 1, decision: 3 },
-                    { text: "Сразу откажитесь от идеи, не размышляя.", anxiety: 2, fear: 2, decision: 1 }
+                    { text: "🔒 Останетесь в уютной клетке старой работы — неизвестное пугает.", anxiety: 2, fear: 3, decision: 2 },
+                    { text: "📊 Взвешиваете риски, зовёте союзников-друзей и выбираете путь.", anxiety: 1, fear: 1, decision: 3 },
+                    { text: "🚫 Отмахнётесь от мечты, не размышляя — страх победил.", anxiety: 2, fear: 2, decision: 1 }
                 ]
             },
             {
-                scenario: "Вы в толпе на концерте и чувствуете клаустрофобию. Сердце бьется чаще.",
+                scenario: "🎶 Уровень 3: Клаустрофобия Толпы. Концерт ревёт, толпа давит, сердце колотится как барабан. Стены лабиринта сжимаются!",
                 choices: [
-                    { text: "Продвинетесь к выходу, сохраняя спокойствие.", anxiety: 1, fear: 1, decision: 3 },
-                    { text: "Замрете на месте, парализованные страхом.", anxiety: 3, fear: 3, decision: 1 },
-                    { text: "Начнете кричать и толкаться.", anxiety: 3, fear: 2, decision: 2 }
+                    { text: "🚪 Спокойно проберётесь к выходу, дыша ровно.", anxiety: 1, fear: 1, decision: 3 },
+                    { text: "🧊 Замрёте, парализованные ужасом — тени густеют.", anxiety: 3, fear: 3, decision: 1 },
+                    { text: "🔥 Крики, толчки — хаос в лабиринте!", anxiety: 3, fear: 2, decision: 2 }
                 ]
             },
             {
-                scenario: "Друг просит помощи в сложной ситуации, но вы боитесь, что это повлияет на вашу жизнь.",
+                scenario: "👥 Уровень 4: Зов Друга. Друг в беде, но его тени могут поглотить вашу жизнь. Лабиринт шепчет: 'Помоги или беги?'",
                 choices: [
-                    { text: "Откажитесь, сославшись на занятость.", anxiety: 2, fear: 2, decision: 2 },
-                    { text: "Поможете, но с четкими границами.", anxiety: 1, fear: 1, decision: 3 },
-                    { text: "Согласитесь на все, не думая о последствиях.", anxiety: 2, fear: 3, decision: 1 }
+                    { text: "❌ Откажитесь, сославшись на 'занятость' — стены защитят.", anxiety: 2, fear: 2, decision: 2 },
+                    { text: "🤝 Поможете, но с границами — как воин с щитом.", anxiety: 1, fear: 1, decision: 3 },
+                    { text: "🌪️ Согласитесь на всё слепо — тени затянут глубже.", anxiety: 2, fear: 3, decision: 1 }
                 ]
             },
             {
-                scenario: "Вы готовитесь к экзамену, но вдруг вспоминаете прошлые неудачи. Тревога нарастает.",
+                scenario: "📚 Уровень 5: Призраки Экзамена. Подготовка кипит, но эхо прошлых провалов воет. Тревога — как туман в лабиринте.",
                 choices: [
-                    { text: "Прекратите подготовку и ляжете спать.", anxiety: 3, fear: 2, decision: 1 },
-                    { text: "Составьте план на оставшееся время и сосредоточьтесь.", anxiety: 1, fear: 1, decision: 3 },
-                    { text: "Начнете прокрастинировать, глядя в телефон.", anxiety: 2, fear: 2, decision: 2 }
+                    { text: "😴 Бросите всё, нырнёте в сон — пусть тени берут верх.", anxiety: 3, fear: 2, decision: 1 },
+                    { text: "🗺️ Составите план битвы и сосредоточьтесь на цели.", anxiety: 1, fear: 1, decision: 3 },
+                    { text: "📱 Прокрастинация: телефон — портал в отвлечения.", anxiety: 2, fear: 2, decision: 2 }
                 ]
             },
             {
-                scenario: "Вам предлагают выступить на публике. Вы никогда этого не делали.",
+                scenario: "🎤 Уровень 6: Сцена Страха. Приглашение на публику — сцена как арена, а вы новичок. Тени аплодируют насмешкой.",
                 choices: [
-                    { text: "Согласитесь сразу, без подготовки.", anxiety: 2, fear: 3, decision: 1 },
-                    { text: "Откажитесь, чтобы не рисковать.", anxiety: 2, fear: 2, decision: 2 },
-                    { text: "Согласитесь и потренируетесь заранее.", anxiety: 1, fear: 1, decision: 3 }
+                    { text: "⚡ Согласитесь импульсивно, без доспеха подготовки.", anxiety: 2, fear: 3, decision: 1 },
+                    { text: "🚫 Откажитесь — лучше в тени, чем на свету.", anxiety: 2, fear: 2, decision: 2 },
+                    { text: "💪 Согласитесь и отточите речь в уединении.", anxiety: 1, fear: 1, decision: 3 }
                 ]
             },
             {
-                scenario: "Вы слышите странный шум ночью в доме. Страх грабежа.",
+                scenario: "🌙 Уровень 7: Ночной Ужас. Шум в темноте — грабители? Лабиринт оживает, тени пляшут.",
                 choices: [
-                    { text: "Спрячетесь под одеялом и не будете проверять.", anxiety: 3, fear: 3, decision: 1 },
-                    { text: "Включите свет, проверите и вызовите полицию, если нужно.", anxiety: 1, fear: 1, decision: 3 },
-                    { text: "Выйдете на улицу в панике.", anxiety: 3, fear: 2, decision: 2 }
+                    { text: "🛏️ Спрячетесь под одеялом, игнорируя шепот.", anxiety: 3, fear: 3, decision: 1 },
+                    { text: "🔦 Свет, проверка, полиция — воин в ночи!", anxiety: 1, fear: 1, decision: 3 },
+                    { text: "🏃 Паника: вырвётесь на улицу в хаосе.", anxiety: 3, fear: 2, decision: 2 }
                 ]
             },
             {
-                scenario: "Нужно выбрать между двумя проектами: один безопасный, другой инновационный.",
+                scenario: "🔬 Уровень 8: Дилемма Проектов. Безопасный путь или инновационный лабиринт? Критика — клинок в тенях.",
                 choices: [
-                    { text: "Выберете безопасный, чтобы избежать критики.", anxiety: 2, fear: 3, decision: 2 },
-                    { text: "Проанализируете риски и выберете инновационный.", anxiety: 1, fear: 1, decision: 3 },
-                    { text: "Не выберете ничего и отложите.", anxiety: 2, fear: 2, decision: 1 }
+                    { text: "🛡️ Безопасный выбор — избежите стрел критики.", anxiety: 2, fear: 3, decision: 2 },
+                    { text: "📈 Анализ рисков, прыжок в инновации!", anxiety: 1, fear: 1, decision: 3 },
+                    { text: "⏳ Отложите всё — тени выиграют время.", anxiety: 2, fear: 2, decision: 1 }
                 ]
             },
             {
-                scenario: "Вы в самолете во время турбулентности. Паника охватывает.",
+                scenario: "✈️ Уровень 9: Турбулентность Души. Самолёт трясёт, паника — как шторм в лабиринте неба.",
                 choices: [
-                    { text: "Закроете глаза и представите спокойное место.", anxiety: 1, fear: 1, decision: 3 },
-                    { text: "Начнете плакать и звать на помощь.", anxiety: 3, fear: 3, decision: 1 },
-                    { text: "Скажете стюардессе, что все в порядке.", anxiety: 2, fear: 2, decision: 2 }
+                    { text: "🧘 Закроете глаза, визуализируете оазис покоя.", anxiety: 1, fear: 1, decision: 3 },
+                    { text: "😭 Слёзы, крики — буря внутри!", anxiety: 3, fear: 3, decision: 1 },
+                    { text: "🛫 Успокоите стюардессу: 'Всё под контролем'.", anxiety: 2, fear: 2, decision: 2 }
                 ]
             },
             {
-                scenario: "Финальное решение: инвестировать сбережения в новый бизнес или сохранить на счете.",
+                scenario: "💰 Уровень 10: Финальный Босс — Риск. Сбережения на кону: бизнес или сундук? Лабиринт затих в ожидании.",
                 choices: [
-                    { text: "Сохраните все, из страха потери.", anxiety: 2, fear: 3, decision: 2 },
-                    { text: "Инвестируйте часть после расчета рисков.", anxiety: 1, fear: 1, decision: 3 },
-                    { text: "Инвестируйте все импульсивно.", anxiety: 3, fear: 2, decision: 1 }
+                    { text: "🔒 Сохраните всё — страх потери как цепи.", anxiety: 2, fear: 3, decision: 2 },
+                    { text: "💼 Инвестируйте часть, рассчитав битву.", anxiety: 1, fear: 1, decision: 3 },
+                    { text: "🎲 Всё на кон — импульс в бездну!", anxiety: 3, fear: 2, decision: 1 }
                 ]
             }
         ];
@@ -177,12 +285,12 @@
 
         function showLevel() {
             const level = levels[currentLevel];
-            document.getElementById('scenario').innerText = level.scenario;
+            document.getElementById('scenario').innerHTML = level.scenario;
             const choicesDiv = document.getElementById('choices');
             choicesDiv.innerHTML = '';
-            level.choices.forEach((choice, index) => {
+            level.choices.forEach((choice) => {
                 const btn = document.createElement('button');
-                btn.innerText = choice.text;
+                btn.innerHTML = choice.text;
                 btn.onclick = () => selectChoice(choice);
                 choicesDiv.appendChild(btn);
             });
@@ -213,25 +321,29 @@
 
             const totalAnxiety = scores.anxiety;
             const totalFear = scores.fear;
-            const totalDecision = scores.decision * 3; // Нормализуем до 30, как и другие
+            const totalDecision = scores.decision * 3;
 
-            let anxietyText = totalAnxiety <= 10 ? 'Низкий' : totalAnxiety <= 20 ? 'Средний' : 'Высокий';
-            let fearText = totalFear <= 10 ? 'Низкий' : totalFear <= 20 ? 'Средний' : 'Высокий';
-            let decisionText = totalDecision >= 20 ? 'Высокое' : totalDecision >= 10 ? 'Среднее' : 'Низкое';
+            let anxietyClass = totalAnxiety <= 10 ? 'low' : totalAnxiety <= 20 ? 'medium' : 'high';
+            let fearClass = totalFear <= 10 ? 'low' : totalFear <= 20 ? 'medium' : 'high';
+            let decisionClass = totalDecision >= 20 ? 'decision-high' : totalDecision >= 10 ? 'decision-medium' : 'decision-low';
+
+            let anxietyText = totalAnxiety <= 10 ? 'Низкий — вы укротитель теней!' : totalAnxiety <= 20 ? 'Средний — лабиринт ещё борется' : 'Высокий — тени сильны, но вы герой!';
+            let fearText = totalFear <= 10 ? 'Низкий — страхи в цепях!' : totalFear <= 20 ? 'Средний — баланс сил' : 'Высокий — эпическая битва впереди!';
+            let decisionText = totalDecision >= 20 ? 'Высокое — мастер лабиринта!' : totalDecision >= 10 ? 'Среднее — растущий воин' : 'Низкое — тренируйтесь, герой!';
 
             resultsDiv.innerHTML = `
-                <h2>Результаты теста</h2>
-                <div class="score">
+                <h2>🏆 Победа! Вы прошли Лабиринт Тревог 🏆</h2>
+                <div class="score ${anxietyClass}">
                     <strong>Уровень тревоги:</strong> ${anxietyText} (${totalAnxiety}/30)
                 </div>
-                <div class="score">
+                <div class="score ${fearClass}">
                     <strong>Уровень страхов:</strong> ${fearText} (${totalFear}/30)
                 </div>
-                <div class="score">
+                <div class="score ${decisionClass}">
                     <strong>Умение принимать решения:</strong> ${decisionText} (${totalDecision}/30)
                 </div>
-                <p>Это не профессиональная диагностика. Если результаты вызывают беспокойство, обратитесь к психологу.</p>
-                <button onclick="location.reload()">Начать заново</button>
+                <p>Это приключение, а не диагноз. Если тени слишком густы, зовите психолога-волшебника!</p>
+                <button class="restart" onclick="location.reload()">🔄 Новое Приключение</button>
             `;
         }
 
