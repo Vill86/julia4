@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Психологическая Игра: Уровень Тревоги и Принятие Решений</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #4a90e2;
+        }
+        .scenario {
+            font-size: 18px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .choices {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        button {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #357abd;
+        }
+        .progress {
+            width: 100%;
+            height: 20px;
+            background-color: #ddd;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #4a90e2;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        #results {
+            display: none;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        .score {
+            background-color: #e8f5e8;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Психологическая Игра: Тест на Тревогу, Страхи и Принятие Решений</h1>
+        <p>Эта игра состоит из 10 уровней. На каждом уровне вам будет предложен сценарий. Выберите один из вариантов ответа. Ваши выборы помогут оценить уровень тревоги, страхов и умение принимать решения.</p>
+        <div class="progress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div id="game">
+            <div class="scenario" id="scenario"></div>
+            <div class="choices" id="choices"></div>
+        </div>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const levels = [
+            {
+                scenario: "Вы стоите перед важным собеседованием. Внезапно вы чувствуете сильное волнение. Что вы сделаете?",
+                choices: [
+                    { text: "Отмените собеседование, чтобы избежать стресса.", anxiety: 3, fear: 2, decision: 1 },
+                    { text: "Сделайте глубокий вдох и продолжите, напомнив себе о подготовке.", anxiety: 1, fear: 1, decision: 3 },
+                    { text: "Начнете паниковать и говорить бессвязно.", anxiety: 3, fear: 3, decision: 1 }
+                ]
+            },
+            {
+                scenario: "Вам нужно принять решение о смене работы. Новая работа рискованная, но перспективная. Ваш страх неудачи мешает.",
+                choices: [
+                    { text: "Останетесь на старой работе из страха неизвестного.", anxiety: 2, fear: 3, decision: 2 },
+                    { text: "Взвесите плюсы и минусы, проконсультируйтесь с друзьями и решите.", anxiety: 1, fear: 1, decision: 3 },
+                    { text: "Сразу откажитесь от идеи, не размышляя.", anxiety: 2, fear: 2, decision: 1 }
+                ]
+            },
+            {
+                scenario: "Вы в толпе на концерте и чувствуете клаустрофобию. Сердце бьется чаще.",
+                choices: [
+                    { text: "Продвинетесь к выходу, сохраняя спокойствие.", anxiety: 1, fear: 1, decision: 3 },
+                    { text: "Замрете на месте, парализованные страхом.", anxiety: 3, fear: 3, decision: 1 },
+                    { text: "Начнете кричать и толкаться.", anxiety: 3, fear: 2, decision: 2 }
+                ]
+            },
+            {
+                scenario: "Друг просит помощи в сложной ситуации, но вы боитесь, что это повлияет на вашу жизнь.",
+                choices: [
+                    { text: "Откажитесь, сославшись на занятость.", anxiety: 2, fear: 2, decision: 2 },
+                    { text: "Поможете, но с четкими границами.", anxiety: 1, fear: 1, decision: 3 },
+                    { text: "Согласитесь на все, не думая о последствиях.", anxiety: 2, fear: 3, decision: 1 }
+                ]
+            },
+            {
+                scenario: "Вы готовитесь к экзамену, но вдруг вспоминаете прошлые неудачи. Тревога нарастает.",
+                choices: [
+                    { text: "Прекратите подготовку и ляжете спать.", anxiety: 3, fear: 2, decision: 1 },
+                    { text: "Составьте план на оставшееся время и сосредоточьтесь.", anxiety: 1, fear: 1, decision: 3 },
+                    { text: "Начнете прокрастинировать, глядя в телефон.", anxiety: 2, fear: 2, decision: 2 }
+                ]
+            },
+            {
+                scenario: "Вам предлагают выступить на публике. Вы никогда этого не делали.",
+                choices: [
+                    { text: "Согласитесь сразу, без подготовки.", anxiety: 2, fear: 3, decision: 1 },
+                    { text: "Откажитесь, чтобы не рисковать.", anxiety: 2, fear: 2, decision: 2 },
+                    { text: "Согласитесь и потренируетесь заранее.", anxiety: 1, fear: 1, decision: 3 }
+                ]
+            },
+            {
+                scenario: "Вы слышите странный шум ночью в доме. Страх грабежа.",
+                choices: [
+                    { text: "Спрячетесь под одеялом и не будете проверять.", anxiety: 3, fear: 3, decision: 1 },
+                    { text: "Включите свет, проверите и вызовите полицию, если нужно.", anxiety: 1, fear: 1, decision: 3 },
+                    { text: "Выйдете на улицу в панике.", anxiety: 3, fear: 2, decision: 2 }
+                ]
+            },
+            {
+                scenario: "Нужно выбрать между двумя проектами: один безопасный, другой инновационный.",
+                choices: [
+                    { text: "Выберете безопасный, чтобы избежать критики.", anxiety: 2, fear: 3, decision: 2 },
+                    { text: "Проанализируете риски и выберете инновационный.", anxiety: 1, fear: 1, decision: 3 },
+                    { text: "Не выберете ничего и отложите.", anxiety: 2, fear: 2, decision: 1 }
+                ]
+            },
+            {
+                scenario: "Вы в самолете во время турбулентности. Паника охватывает.",
+                choices: [
+                    { text: "Закроете глаза и представите спокойное место.", anxiety: 1, fear: 1, decision: 3 },
+                    { text: "Начнете плакать и звать на помощь.", anxiety: 3, fear: 3, decision: 1 },
+                    { text: "Скажете стюардессе, что все в порядке.", anxiety: 2, fear: 2, decision: 2 }
+                ]
+            },
+            {
+                scenario: "Финальное решение: инвестировать сбережения в новый бизнес или сохранить на счете.",
+                choices: [
+                    { text: "Сохраните все, из страха потери.", anxiety: 2, fear: 3, decision: 2 },
+                    { text: "Инвестируйте часть после расчета рисков.", anxiety: 1, fear: 1, decision: 3 },
+                    { text: "Инвестируйте все импульсивно.", anxiety: 3, fear: 2, decision: 1 }
+                ]
+            }
+        ];
+
+        let currentLevel = 0;
+        let scores = { anxiety: 0, fear: 0, decision: 0 };
+
+        function showLevel() {
+            const level = levels[currentLevel];
+            document.getElementById('scenario').innerText = level.scenario;
+            const choicesDiv = document.getElementById('choices');
+            choicesDiv.innerHTML = '';
+            level.choices.forEach((choice, index) => {
+                const btn = document.createElement('button');
+                btn.innerText = choice.text;
+                btn.onclick = () => selectChoice(choice);
+                choicesDiv.appendChild(btn);
+            });
+            updateProgress();
+        }
+
+        function selectChoice(choice) {
+            scores.anxiety += choice.anxiety;
+            scores.fear += choice.fear;
+            scores.decision += choice.decision;
+            currentLevel++;
+            if (currentLevel < levels.length) {
+                showLevel();
+            } else {
+                showResults();
+            }
+        }
+
+        function updateProgress() {
+            const progress = ((currentLevel / levels.length) * 100);
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function showResults() {
+            document.getElementById('game').style.display = 'none';
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.style.display = 'block';
+
+            const totalAnxiety = scores.anxiety;
+            const totalFear = scores.fear;
+            const totalDecision = scores.decision * 3; // Нормализуем до 30, как и другие
+
+            let anxietyText = totalAnxiety <= 10 ? 'Низкий' : totalAnxiety <= 20 ? 'Средний' : 'Высокий';
+            let fearText = totalFear <= 10 ? 'Низкий' : totalFear <= 20 ? 'Средний' : 'Высокий';
+            let decisionText = totalDecision >= 20 ? 'Высокое' : totalDecision >= 10 ? 'Среднее' : 'Низкое';
+
+            resultsDiv.innerHTML = `
+                <h2>Результаты теста</h2>
+                <div class="score">
+                    <strong>Уровень тревоги:</strong> ${anxietyText} (${totalAnxiety}/30)
+                </div>
+                <div class="score">
+                    <strong>Уровень страхов:</strong> ${fearText} (${totalFear}/30)
+                </div>
+                <div class="score">
+                    <strong>Умение принимать решения:</strong> ${decisionText} (${totalDecision}/30)
+                </div>
+                <p>Это не профессиональная диагностика. Если результаты вызывают беспокойство, обратитесь к психологу.</p>
+                <button onclick="location.reload()">Начать заново</button>
+            `;
+        }
+
+        showLevel();
+    </script>
+</body>
+</html>
