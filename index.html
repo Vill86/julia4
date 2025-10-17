@@ -12,7 +12,7 @@
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #0f3460 100%);
             color: #fff;
             text-align: center;
-            padding: 0;
+            padding: 10px;
             margin: 0;
             overflow-x: hidden;
             animation: bgPulse 10s ease-in-out infinite alternate;
@@ -25,7 +25,7 @@
             max-width: 900px;
             margin: 0 auto;
             background: rgba(0, 0, 0, 0.7);
-            padding: 30px;
+            padding: 20px;
             border-radius: 20px;
             box-shadow: 0 0 30px rgba(74, 144, 226, 0.5);
             backdrop-filter: blur(10px);
@@ -60,13 +60,38 @@
         }
         .intro {
             font-size: 1.2em;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             opacity: 0;
             animation: fadeIn 1s ease-in forwards;
         }
         @keyframes fadeIn {
             to { opacity: 1; }
         }
+        .status-bar {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        .status-item {
+            text-align: center;
+            min-width: 120px;
+        }
+        .status-item strong {
+            display: block;
+            font-size: 0.9em;
+        }
+        .status-value {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        .stress-low { color: #6bcf7f; }
+        .stress-medium { color: #ffd93d; }
+        .stress-high { color: #ff6b6b; }
         .scenario {
             font-size: 1.3em;
             margin-bottom: 30px;
@@ -125,10 +150,11 @@
         }
         .progress {
             width: 80%;
+            max-width: 400px;
             height: 25px;
             background: rgba(0,0,0,0.5);
             border-radius: 50px;
-            margin: 30px auto;
+            margin: 20px auto;
             overflow: hidden;
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
         }
@@ -140,7 +166,7 @@
             position: relative;
         }
         .progress-bar::after {
-            content: 'Уровень ' + (currentLevel + 1);
+            content: attr(data-level);
             position: absolute;
             top: 50%;
             left: 50%;
@@ -180,14 +206,46 @@
         .restart:hover {
             background: linear-gradient(45deg, #4a90e2, #6bcf7f);
         }
+
+        /* Responsive для мобильных */
+        @media (max-width: 600px) {
+            body { padding: 5px; }
+            .container { padding: 15px; }
+            h1 { font-size: 2em; }
+            .scenario { font-size: 1.1em; padding: 15px; }
+            button { min-width: 100%; padding: 12px; font-size: 1em; }
+            .status-bar { flex-direction: column; gap: 5px; }
+            .status-item { min-width: auto; }
+            .progress { width: 95%; }
+        }
+        @media (max-width: 400px) {
+            h1 { font-size: 1.8em; }
+            .intro { font-size: 1em; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🧠 Психо-Приключение: Лабиринт Тревог 🧠</h1>
         <p class="intro">Добро пожаловать в лабиринт вашего сознания! Проходите 10 уровней, сражайтесь с внутренними демонами тревоги и страхов. Выборы — ваш меч. В конце узнайте, насколько вы мастер решений! Готовы нырнуть в бездну?</p>
+        
+        <div class="status-bar" id="statusBar">
+            <div class="status-item">
+                <strong>Уровень</strong>
+                <span class="status-value" id="currentLevel">1/10</span>
+            </div>
+            <div class="status-item">
+                <strong>Стресс</strong>
+                <span class="status-value stress-low" id="stressLevel">Низкий</span>
+            </div>
+            <div class="status-item">
+                <strong>Баллы (Тревога)</strong>
+                <span class="status-value" id="anxietyScore">0</span>
+            </div>
+        </div>
+        
         <div class="progress">
-            <div class="progress-bar" id="progressBar"></div>
+            <div class="progress-bar" id="progressBar" data-level="Уровень 1"></div>
         </div>
         <div id="game">
             <div class="scenario" id="scenario"></div>
@@ -283,6 +341,28 @@
         let currentLevel = 0;
         let scores = { anxiety: 0, fear: 0, decision: 0 };
 
+        function updateStatus() {
+            const levelNum = currentLevel + 1;
+            document.getElementById('currentLevel').textContent = `${levelNum}/10`;
+            document.getElementById('progressBar').setAttribute('data-level', `Уровень ${levelNum}`);
+            
+            const totalAnxiety = scores.anxiety;
+            document.getElementById('anxietyScore').textContent = totalAnxiety;
+            
+            let stressText = 'Низкий';
+            let stressClass = 'stress-low';
+            if (totalAnxiety > (levels.length * 3 * 2 / 3)) { // Примерно >20/30 для высокого
+                stressText = 'Высокий';
+                stressClass = 'stress-high';
+            } else if (totalAnxiety > (levels.length * 3 / 3)) { // >10/30 для среднего
+                stressText = 'Средний';
+                stressClass = 'stress-medium';
+            }
+            const stressEl = document.getElementById('stressLevel');
+            stressEl.textContent = stressText;
+            stressEl.className = `status-value ${stressClass}`;
+        }
+
         function showLevel() {
             const level = levels[currentLevel];
             document.getElementById('scenario').innerHTML = level.scenario;
@@ -295,6 +375,7 @@
                 choicesDiv.appendChild(btn);
             });
             updateProgress();
+            updateStatus();
         }
 
         function selectChoice(choice) {
